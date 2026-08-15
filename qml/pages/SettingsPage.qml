@@ -74,9 +74,20 @@ Page {
                 text: qsTr("About")
             }
 
-            DetailItem {
-                label: qsTr("Version")
-                value: "0.2.0"
+            BackgroundItem {
+                width: parent.width
+                onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
+
+                Label {
+                    anchors {
+                        left: parent.left
+                        leftMargin: Theme.horizontalPageMargin
+                        verticalCenter: parent.verticalCenter
+                    }
+                    text: qsTr("About this app")
+                    color: Theme.highlightColor
+                    font.pixelSize: Theme.fontSizeSmall
+                }
             }
         }
     }

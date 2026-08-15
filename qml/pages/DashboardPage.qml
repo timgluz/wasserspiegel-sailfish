@@ -28,6 +28,10 @@ Page {
                 text: qsTr("Logs")
                 onClicked: pageStack.push(Qt.resolvedUrl("LogsPage.qml"))
             }
+            MenuItem {
+                text: qsTr("About")
+                onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
+            }
         }
 
         Column {
