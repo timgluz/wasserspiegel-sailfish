@@ -50,19 +50,37 @@ task check          # sfdk check (Harbour validator + rpmlint)
 ## Signing
 
 ```sh
-gpg --gen-key
-task sign:setup SIGNING_USER="Timo Sulg"          # + optional PASSPHRASE_FILE
-task sign                                         # sfdk build --prepare --sign
-task verify                                       # rpm -K
-task release                                      # sign + verify + sha256 (one-shot)
+gpg --gen-key                                   # create an RSA key (see below)
+task sign:setup SIGNING_USER="Timo Sulg (Harbour signing)"
+task sign                                       # sfdk build --prepare --sign
+task verify                                     # rpm -K
+task release                                    # sign + verify + sha256 (one-shot)
+```
+
+**The signing key must be RSA** — the SDK build engine ships `gpg2` 2.0.4
+(2009), which cannot use modern `ed25519` keys (`gpg: Ohhhh jeeee: mpi
+larger than packet`). Generate an RSA key:
+
+```sh
+gpg --full-generate-key   # choose "RSA and RSA", 3072 bits, add a comment
+```
+
+**The key must live in the build engine** (signing runs inside the engine,
+which has its own gpg keyring, not the host's). Import it once:
+
+```sh
+gpg --export-secret-keys --armor "Timo Sulg (Harbour signing)" > signing-key.asc
+docker cp signing-key.asc sailfish-sdk-build-engine_timgluz:/home/mersdk/
+sfdk engine exec sh -c 'gpg2 --batch --import /home/mersdk/signing-key.asc && rm /home/mersdk/signing-key.asc'
 ```
 
 First-time verification may report `digests SIGNATURES NOT OK`; import the
-key into the rpm keyring:
+public key into the rpm keyring:
 
 ```sh
-gpg --output keyfile.gpg --armor --export "Timo Sulg"
-rpm --import keyfile.gpg
+gpg --export --armor "Timo Sulg (Harbour signing)" > keyfile.gpg
+sudo rpm --import keyfile.gpg
+rpm -K RPMS/harbour-wasserspiegel-*.rpm          # digests signatures OK
 ```
 
 See https://docs.sailfishos.org/Develop/Apps/Packaging/Signing_Packages
