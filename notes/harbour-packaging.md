@@ -41,6 +41,9 @@ task check          # sfdk check (Harbour validator + rpmlint)
 - Suites: `harbour` (allowed APIs/permissions), `rpmlint`, `rpmspec`.
 - Harbour **disallows** `QtPositioning` import and the `Location` sailjail
   permission -> the GPS/"find nearest" feature is not Harbour-clean.
+- The `[X-Sailjail] Permissions` value is **semicolon-separated**
+  (e.g. `Permissions=Internet;Location`), and the permission name is the
+  `.permission` filename (`Location` -> shown as "Positioning" in Settings).
 - Allowed APIs: https://docs.sailfishos.org/Develop/Apps/Harbour/Allowed_APIs
 - Allowed permissions: https://docs.sailfishos.org/Develop/Apps/Harbour/Allowed_Permissions
 
