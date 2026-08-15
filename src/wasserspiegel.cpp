@@ -11,9 +11,10 @@
 
 int main(int argc, char *argv[])
 {
+    QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
+    // install after the app is created so it is not overridden by Sailfish
     wsInstallMessageHandler();
 
-    QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     app->setOrganizationName(QStringLiteral("wasserspiegel"));
     app->setApplicationName(QStringLiteral("wasserspiegel"));
 

@@ -26,7 +26,7 @@ tasks:
       - cargo fetch --manifest-path "{{.RUST_DIR}}/Cargo.toml"
 
   build:
-    desc: Build the Rust core + Sailfish RPM via sfdk
+    desc: "Build the Rust core + Sailfish RPM via sfdk (commit changes first)"
     silent: true
     preconditions:
       - sh: command -v sfdk
@@ -34,8 +34,8 @@ tasks:
     deps:
       - engine:rust
     cmds:
-      - echo "Building the app..."
-      - sfdk build
+      - echo "Building the app (--prepare so source changes are picked up)..."
+      - sfdk build --prepare
 
   engine:setup:
     desc: "One-time build-engine setup (Rust toolchain + credential forwarding)"
@@ -116,12 +116,12 @@ tasks:
       - cargo fmt --manifest-path "{{.RUST_DIR}}/Cargo.toml"
 
   clean:
-    desc: Remove build artifacts (cargo + RPM output)
+    desc: Remove build artifacts (cargo + RPM + shadow build output)
     silent: true
     cmds:
       - echo "Cleaning..."
       - cargo clean --manifest-path "{{.RUST_DIR}}/Cargo.toml"
-      - rm -rf "{{.ROOT_DIR}}/RPMS"
+      - rm -rf "{{.ROOT_DIR}}/RPMS" "{{.ROOT_DIR}}/.sfdk"
 
   deploy:
     desc: "Install the built RPM on a phone (default: defaultuser@192.168.2.15)"
