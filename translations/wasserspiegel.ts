@@ -2,6 +2,37 @@
 <!DOCTYPE TS>
 <TS version="2.1">
 <context>
+    <name>AboutPage</name>
+    <message>
+        <source>About</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Wasserspiegel shows current water levels from the German PEGELONLINE service. Browse measurement stations, follow water level trends (24 h / 3 d / 7 d) and keep your favourite station on the home screen cover.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Links</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Source code (GitHub)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data source: PEGELONLINE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>TRMNL dashboard version</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AppController</name>
     <message>
         <source>API URL or token is not configured</source>
@@ -89,6 +120,10 @@
         <source>Demo data - pick a station for live readings</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>About</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>LogsPage</name>
@@ -139,7 +174,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Version</source>
+        <source>About this app</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
