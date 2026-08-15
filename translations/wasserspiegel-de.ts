@@ -104,10 +104,6 @@
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Logs copied to clipboard</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>QObject</name>
