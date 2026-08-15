@@ -7,8 +7,8 @@ Item {
     property var points: []
     property real minValue: 0
     property real maxValue: 1
-    property qint64 startMs: 0
-    property qint64 endMs: 0
+    property double startMs: 0
+    property double endMs: 0
     property string unit: "cm"
 
     readonly property real leftMargin: Theme.fontSizeSmall * 3
