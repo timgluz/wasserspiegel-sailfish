@@ -9,6 +9,8 @@
 #   4. cross-toolchain wrappers that add the correct sysroot + `as`/`ld`
 #      (the SDK's cross gcc does not carry a usable default sysroot and
 #       resolves `as`/`ld` to the host 32-bit ones)
+#   5. forwards WASSERSPIEGEL_API / WASSERSPIEGEL_TOKEN into the build
+#      engine, so `qmake` can bake them in as compile-time defaults
 set -euo pipefail
 
 SFDK="${SFDK:-sfdk}"
@@ -71,5 +73,8 @@ docker exec "$CONTAINER" sh -c '
 '
 docker cp "$TMP/bin/." "$CONTAINER:/home/mersdk/cross-tools/bin/"
 docker exec "$CONTAINER" sh -c 'chmod +x /home/mersdk/cross-tools/bin/*; chown mersdk:mersdk /home/mersdk/cross-tools/bin/*'
+
+echo "== 5/5 forwarding credential env vars to the build engine =="
+"$SFDK" engine set "environment.forward=WASSERSPIEGEL_API WASSERSPIEGEL_TOKEN"
 
 echo "== done: engine ready =="

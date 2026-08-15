@@ -38,7 +38,7 @@ tasks:
       - sfdk build
 
   engine:setup:
-    desc: One-time Rust toolchain setup inside the SDK build engine
+    desc: "One-time build-engine setup (Rust toolchain + credential forwarding)"
     silent: true
     preconditions:
       - sh: command -v sfdk

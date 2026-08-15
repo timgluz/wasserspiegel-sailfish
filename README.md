@@ -69,6 +69,9 @@ This (via `rust/engine-setup.sh`) installs, inside the engine:
 - host `gcc-c++` (needed by the `link-cplusplus` build script)
 - cross-toolchain wrappers adding the correct `--sysroot` and `as`/`ld`
   (the SDK's `aarch64-meego-linux-gnu-g++` ships no usable default sysroot)
+- forwards `WASSERSPIEGEL_API` / `WASSERSPIEGEL_TOKEN` from the host into
+  the build engine (`sfdk engine set environment.forward=...`), so qmake
+  can bake them in as compile-time defaults
 
 Re-run `task engine:setup` (it is idempotent) if you ever reset the engine.
 
@@ -183,7 +186,7 @@ ssh defaultuser@192.168.2.15   # then: journalctl --user -f | grep -i wasserspie
 
 | Task | What it does |
 | --- | --- |
-| `task engine:setup` | one-time Rust toolchain setup in the SDK engine |
+| `task engine:setup` | one-time build-engine setup (Rust toolchain + credential forwarding) |
 | `task engine:rust` | cross-compile the Rust core for aarch64 in the engine |
 | `task build` | `engine:rust` + `sfdk build` |
 | `task deploy` | scp + `pkcon install-local` (default `defaultuser@192.168.2.15`) |
