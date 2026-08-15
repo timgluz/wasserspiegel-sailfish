@@ -1,12 +1,9 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import QtPositioning 5.0
 
 Page {
     id: page
 
-    property bool locating: false
-    property string locateError: ""
     property string searchText: ""
 
     SilicaListView {
@@ -49,14 +46,9 @@ Page {
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: page.locating ? qsTr("Locating...") : qsTr("Find nearest station (GPS)")
-                enabled: !page.locating && !appController.stationsLoading
-                onClicked: {
-                    page.locateError = ""
-                    page.locating = true
-                    positionSource.active = true
-                    locationTimeout.restart()
-                }
+                text: appController.gpsLocating ? qsTr("Locating...") : qsTr("Find nearest station (GPS)")
+                enabled: !appController.gpsLocating && !appController.stationsLoading
+                onClicked: appController.startGpsLookup()
             }
 
             SectionHeader {
@@ -66,7 +58,7 @@ Page {
         }
 
         ViewPlaceholder {
-            enabled: listView.count === 0 && !appController.stationsLoading && !page.locating
+            enabled: listView.count === 0 && !appController.stationsLoading && !appController.gpsLocating
             text: page.searchText.length < 2
                   ? qsTr("Search by city name or river, or use the GPS button above")
                   : qsTr("No matching stations")
@@ -105,12 +97,12 @@ Page {
 
     BusyIndicator {
         anchors.centerIn: parent
-        running: appController.stationsLoading || page.locating
+        running: appController.stationsLoading || appController.gpsLocating
         size: BusyIndicatorSize.Large
     }
 
     Label {
-        visible: (appController.error !== "" || page.locateError !== "")
+        visible: (appController.error !== "" || appController.gpsError !== "")
                  && !appController.stationsLoading
         anchors {
             left: parent.left
@@ -121,48 +113,7 @@ Page {
         wrapMode: Text.Wrap
         font.pixelSize: Theme.fontSizeExtraSmall
         color: Theme.errorColor
-        text: page.locateError !== "" ? page.locateError : appController.error
-    }
-
-    PositionSource {
-        id: positionSource
-        active: false
-
-        onPositionChanged: {
-            if (position.latitudeValid && position.longitudeValid) {
-                positionSource.active = false
-                locationTimeout.stop()
-                appController.findNearestStation(position.coordinate.latitude,
-                                                 position.coordinate.longitude)
-            }
-        }
-
-        onSourceErrorChanged: {
-            if (positionSource.sourceError !== PositionSource.NoError) {
-                positionSource.active = false
-                locationTimeout.stop()
-                page.locating = false
-                var msg
-                if (positionSource.sourceError === PositionSource.AccessError) {
-                    msg = qsTr("Location is disabled — enable it in Settings")
-                } else if (positionSource.sourceError === PositionSource.ClosedError) {
-                    msg = qsTr("Location service closed")
-                } else {
-                    msg = qsTr("Could not determine location — check Location is enabled")
-                }
-                page.locateError = msg
-            }
-        }
-    }
-
-    Timer {
-        id: locationTimeout
-        interval: 15000
-        onTriggered: {
-            positionSource.active = false
-            page.locating = false
-            page.locateError = qsTr("Location timed out — check Location is enabled")
-        }
+        text: appController.gpsError !== "" ? appController.gpsError : appController.error
     }
 
     Connections {
@@ -173,7 +124,6 @@ Page {
             }
         }
         onNearestStationFound: {
-            page.locating = false
             if (pageStack.depth > 1) pageStack.pop()
             else pageStack.replace(Qt.resolvedUrl("DashboardPage.qml"))
         }

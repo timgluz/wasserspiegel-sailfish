@@ -4,6 +4,8 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QGeoPositionInfo>
+#include <QGeoPositionInfoSource>
 #include <QMutex>
 #include <QMutexLocker>
 #include <QPointer>
@@ -135,6 +137,12 @@ AppController::AppController(QObject *parent)
     : QObject(parent)
     , m_settings(this)
 {
+    m_gpsTimeout.setSingleShot(true);
+    connect(&m_gpsTimeout, &QTimer::timeout, this, [this]() {
+        stopGpsLookup();
+        m_gpsError = tr("Location timed out — check Location is enabled");
+        emit gpsErrorChanged();
+    });
 }
 
 AppController::~AppController() = default;
@@ -642,4 +650,59 @@ void AppController::doFindNearest(double lat, double lon)
     const auto &s = nearest.at(0);
     selectStation(rustString(s.id), rustString(s.name), rustString(s.water));
     emit nearestStationFound();
+}
+
+void AppController::startGpsLookup()
+{
+    if (m_gpsSource)
+        return; // already looking up
+
+    QGeoPositionInfoSource *source = QGeoPositionInfoSource::createDefaultSource(this);
+    if (!source) {
+        m_gpsError = tr("Location is not available on this device");
+        emit gpsErrorChanged();
+        return;
+    }
+
+    m_gpsSource = source;
+    connect(source, &QGeoPositionInfoSource::positionUpdated, this,
+            [this](const QGeoPositionInfo &info) {
+                stopGpsLookup();
+                const QGeoCoordinate c = info.coordinate();
+                if (c.isValid()) {
+                    doFindNearest(c.latitude(), c.longitude());
+                } else {
+                    m_gpsError = tr("Could not determine location — check Location is enabled");
+                    emit gpsErrorChanged();
+                }
+            });
+    connect(source, &QGeoPositionInfoSource::errorChanged, this, [this, source]() {
+        if (source->error() != QGeoPositionInfoSource::NoError) {
+            stopGpsLookup();
+            m_gpsError = tr("Could not determine location — check Location is enabled");
+            emit gpsErrorChanged();
+        }
+    });
+
+    m_gpsError.clear();
+    emit gpsErrorChanged();
+    m_gpsLocating = true;
+    emit gpsLocatingChanged();
+
+    source->startUpdates();
+    m_gpsTimeout.start(15000);
+}
+
+void AppController::stopGpsLookup()
+{
+    m_gpsTimeout.stop();
+    if (m_gpsSource) {
+        m_gpsSource->stopUpdates();
+        m_gpsSource->deleteLater();
+        m_gpsSource = nullptr;
+    }
+    if (m_gpsLocating) {
+        m_gpsLocating = false;
+        emit gpsLocatingChanged();
+    }
 }

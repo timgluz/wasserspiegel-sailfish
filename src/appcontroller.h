@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QVariantList>
+#include <QTimer>
 #include <memory>
 #include <vector>
 
@@ -62,6 +63,11 @@ class AppController : public QObject
     // bad/expired credentials - the UI offers the Settings page then
     Q_PROPERTY(bool needsConfig READ needsConfig NOTIFY needsConfigChanged)
 
+    // GPS ("find nearest") state, driven from C++ so the QML never needs
+    // the (Harbour-disallowed) QtPositioning import
+    Q_PROPERTY(bool gpsLocating READ gpsLocating NOTIFY gpsLocatingChanged)
+    Q_PROPERTY(QString gpsError READ gpsError NOTIFY gpsErrorChanged)
+
 public:
     explicit AppController(QObject *parent = nullptr);
     ~AppController() override;
@@ -75,6 +81,7 @@ public:
     Q_INVOKABLE void testConnection();
     Q_INVOKABLE QString logText() const;
     Q_INVOKABLE void findNearestStation(double lat, double lon);
+    Q_INVOKABLE void startGpsLookup();
 
     // property getters
     QString stationId() const { return m_stationId; }
@@ -104,6 +111,8 @@ public:
     QString apiToken() const { return m_apiToken; }
     bool configured() const { return !m_apiBase.isEmpty() && !m_apiToken.isEmpty(); }
     bool needsConfig() const { return m_needsConfig; }
+    bool gpsLocating() const { return m_gpsLocating; }
+    QString gpsError() const { return m_gpsError; }
 
     void setGraphPeriodHours(int hours);
     void setApiBase(const QString &value);
@@ -122,6 +131,8 @@ signals:
     void needsConfigChanged();
     void nearestStationFound();
     void recentStationsChanged();
+    void gpsLocatingChanged();
+    void gpsErrorChanged();
 
 private:
     void populateFromMetrics(const wasserspiegel::FfiStationMetrics &metrics, bool persist);
@@ -133,6 +144,7 @@ private:
     void applyDemoData();
     void doFindNearest(double lat, double lon);
     void rememberRecentStation(const QString &id, const QString &name, const QString &water);
+    void stopGpsLookup();
     bool createClient();
     QVariantList summariesToVariantList(
         const rust::Vec<wasserspiegel::FfiStationSummary> &list);
@@ -180,6 +192,11 @@ private:
     QString m_apiToken;
 
     bool m_needsConfig = false;
+
+    class QGeoPositionInfoSource *m_gpsSource = nullptr;
+    QTimer m_gpsTimeout;
+    bool m_gpsLocating = false;
+    QString m_gpsError;
 };
 
 // Installs the Qt message handler that captures qDebug/qWarning output
