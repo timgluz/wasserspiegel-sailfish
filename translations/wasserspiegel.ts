@@ -31,6 +31,40 @@
         <source>TRMNL dashboard version</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Changelog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>  - Recent stations on the picker
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>  - Find nearest station via GPS
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>  - Logs page
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>  - About page
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>  - Demo data fallback
+
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>  - Initial release</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AppController</name>
