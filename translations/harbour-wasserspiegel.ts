@@ -259,11 +259,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Location error: %1</source>
+        <source>Could not determine location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Could not determine location</source>
+        <source>Location error</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

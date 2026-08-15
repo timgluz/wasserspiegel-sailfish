@@ -200,3 +200,18 @@ tasks:
       - echo "Deploying to {{.DEVICE}}..."
       - scp {{.ROOT_DIR}}/RPMS/harbour-wasserspiegel-*.rpm "{{.DEVICE}}:/tmp/harbour-wasserspiegel.rpm"
       - ssh "{{.DEVICE}}" "echo '$JOLLA_SSH_PASSWORD' | devel-su pkcon install-local -y /tmp/harbour-wasserspiegel.rpm"
+
+  screenshots:
+    desc: "Pull screenshots from the phone and upscale to 1080 width (store minimum)"
+    silent: true
+    preconditions:
+      - sh: test -n "{{.DEVICE}}"
+        msg: "DEVICE is required, e.g. task screenshots DEVICE=nemo@192.168.2.15"
+      - sh: command -v magick
+        msg: "ImageMagick (magick) is required to resize the screenshots."
+    cmds:
+      - echo "Pulling screenshots from {{.DEVICE}}..."
+      - mkdir -p {{.ROOT_DIR}}/screenshots
+      - scp "{{.DEVICE}}:~/Pictures/Screenshots/*.png" {{.ROOT_DIR}}/screenshots/
+      - echo "Upscaling to 1080 width..."
+      - 'for f in {{.ROOT_DIR}}/screenshots/*.png; do magick "$f" -filter Lanczos -resize 1080x "$f"; done'
