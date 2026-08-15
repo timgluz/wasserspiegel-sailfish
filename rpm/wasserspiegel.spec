@@ -11,7 +11,10 @@ BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
+BuildRequires:  pkgconfig(Qt5Concurrent)
 BuildRequires:  desktop-file-utils
+# NOTE: the Rust core is prebuilt by 'task engine:rust' (see README.md) -
+# qmake links rust/target/aarch64-unknown-linux-gnu/release/libwasserspiegel_core.a
 
 %description
 Shows current waterlevel from closest measurement station.

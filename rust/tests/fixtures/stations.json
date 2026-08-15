@@ -1,0 +1,88 @@
+{
+ "stations": [
+  {
+   "uuid": "b475386c-30cc-453a-b3b7-1d17ace13595",
+   "longname": "CELLE",
+   "shortname": "CELLE",
+   "km": 1.74,
+   "latitude": 52.622706,
+   "longitude": 10.062164,
+   "water": {
+    "longname": "ALLER",
+    "shortname": "ALLER"
+   }
+  },
+  {
+   "uuid": "8b4f9f7c-3376-4dd8-95c1-de55b1be4dfd",
+   "longname": "MARKLENDORF",
+   "shortname": "MARKLENDORF",
+   "km": 38.47,
+   "latitude": 52.682757,
+   "longitude": 9.703456,
+   "water": {
+    "longname": "ALLER",
+    "shortname": "ALLER"
+   }
+  },
+  {
+   "uuid": "522286e2-b2b3-4d0d-9a11-01b3ea418c76",
+   "longname": "AHLDEN",
+   "shortname": "AHLDEN",
+   "km": 58.71,
+   "latitude": 52.762431,
+   "longitude": 9.570881,
+   "water": {
+    "longname": "ALLER",
+    "shortname": "ALLER"
+   }
+  },
+  {
+   "uuid": "25582d3f-dc5f-4c70-bd08-e84fd13201ca",
+   "longname": "MANNHEIM NECKAR",
+   "shortname": "Mannheim Neckar",
+   "km": 3.1,
+   "latitude": 49.49435,
+   "longitude": 8.469365,
+   "water": {
+    "longname": "NECKAR",
+    "shortname": "NECKAR"
+   }
+  },
+  {
+   "uuid": "57090802-c51a-4d09-8340-b4453cd0e1f5",
+   "longname": "MANNHEIM",
+   "shortname": "MANNHEIM",
+   "km": 424.733,
+   "latitude": 49.48394,
+   "longitude": 8.455165,
+   "water": {
+    "longname": "RHEIN",
+    "shortname": "RHEIN"
+   }
+  },
+  {
+   "uuid": "4c7d796a-39f2-4f26-97a9-3aad01713e29",
+   "longname": "KOBLENZ",
+   "shortname": "KOBLENZ",
+   "km": 591.49,
+   "latitude": 50.35864,
+   "longitude": 7.604741,
+   "water": {
+    "longname": "RHEIN",
+    "shortname": "RHEIN"
+   }
+  },
+  {
+   "uuid": "593647aa-9fea-43ec-a7d6-6476a76ae868",
+   "longname": "BONN",
+   "shortname": "BONN",
+   "km": 654.8,
+   "latitude": 50.736398,
+   "longitude": 7.108045,
+   "water": {
+    "longname": "RHEIN",
+    "shortname": "RHEIN"
+   }
+  }
+ ]
+}

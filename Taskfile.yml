@@ -1,0 +1,135 @@
+# https://taskfile.dev
+
+version: "3"
+
+dotenv:
+  - ".envrc"
+
+vars:
+  RUST_TARGET: aarch64-unknown-linux-gnu
+  RUST_DIR: "{{.ROOT_DIR}}/rust"
+
+tasks:
+  default:
+    desc: Show available tasks
+    silent: true
+    cmds:
+      - task --list
+
+  deps:
+    desc: Fetch Rust dependencies
+    silent: true
+    cmds:
+      - echo "Fetching dependencies..."
+      - cargo fetch --manifest-path "{{.RUST_DIR}}/Cargo.toml"
+
+  build:
+    desc: Build the Rust core + Sailfish RPM via sfdk
+    silent: true
+    preconditions:
+      - sh: command -v sfdk
+        msg: "sfdk not found - install the Sailfish SDK and add it to PATH."
+    deps:
+      - engine:rust
+    cmds:
+      - echo "Building the app..."
+      - sfdk build
+
+  engine:setup:
+    desc: One-time Rust toolchain setup inside the SDK build engine
+    silent: true
+    preconditions:
+      - sh: command -v sfdk
+        msg: "sfdk not found - install the Sailfish SDK and add it to PATH."
+    cmds:
+      - echo "Setting up Rust in the build engine..."
+      - bash "{{.RUST_DIR}}/engine-setup.sh"
+
+  engine:rust:
+    desc: Cross-compile the Rust core for aarch64 in the SDK build engine
+    silent: true
+    preconditions:
+      - sh: command -v sfdk
+        msg: "sfdk not found - install the Sailfish SDK and add it to PATH."
+      - sh: test -x "{{.RUST_DIR}}/engine-setup.sh"
+        msg: "run 'task engine:setup' first"
+    cmds:
+      - echo "Cross-compiling wasserspiegel-core ({{.RUST_TARGET}})..."
+      - bash "{{.RUST_DIR}}/engine-build.sh"
+
+  test:
+    desc: Run Rust core unit + fixture tests
+    silent: true
+    cmds:
+      - task: deps
+      - echo "Running tests..."
+      - cargo test --manifest-path "{{.RUST_DIR}}/Cargo.toml"
+
+  "test:live":
+    desc: Run live API smoke tests (uses .envrc credentials)
+    silent: true
+    preconditions:
+      - sh: test -n "$WASSERSPIEGEL_API" -a -n "$WASSERSPIEGEL_TOKEN"
+        msg: "WASSERSPIEGEL_API / WASSERSPIEGEL_TOKEN are required (see .envrc)."
+    cmds:
+      - echo "Running live API tests against {{.WASSERSPIEGEL_API}}..."
+      - cargo test --manifest-path "{{.RUST_DIR}}/Cargo.toml" --test live_smoke -- --ignored --nocapture
+
+  smoke:
+    desc: Host C++ bridge smoke test (live API, g++ required)
+    silent: true
+    preconditions:
+      - sh: command -v g++
+        msg: "g++ is required to compile the bridge smoke test."
+      - sh: test -n "$WASSERSPIEGEL_API" -a -n "$WASSERSPIEGEL_TOKEN"
+        msg: "WASSERSPIEGEL_API / WASSERSPIEGEL_TOKEN are required (see .envrc)."
+    cmds:
+      - echo "Building host debug staticlib..."
+      - cargo build --manifest-path "{{.RUST_DIR}}/Cargo.toml"
+      - echo "Compiling and running the bridge smoke test..."
+      - g++ -std=c++17 -I "{{.RUST_DIR}}/include" "{{.RUST_DIR}}/smoke/bridge_smoke.cpp" "{{.RUST_DIR}}/target/debug/libwasserspiegel_core.a" -ldl -pthread -o "{{.RUST_DIR}}/target/debug/bridge_smoke"
+      - "{{.RUST_DIR}}/target/debug/bridge_smoke"
+
+  "test:all":
+    desc: Run unit tests, live API tests and the C++ bridge smoke test
+    silent: true
+    cmds:
+      - task: test
+      - task: "test:live"
+      - task: smoke
+
+  lint:
+    desc: Check formatting and run clippy on the Rust core
+    silent: true
+    cmds:
+      - task: deps
+      - echo "Running linter..."
+      - cargo fmt --manifest-path "{{.RUST_DIR}}/Cargo.toml" --check
+      - cargo clippy --manifest-path "{{.RUST_DIR}}/Cargo.toml" --all-targets -- -D warnings
+
+  fmt:
+    desc: Auto-format the Rust core
+    silent: true
+    cmds:
+      - cargo fmt --manifest-path "{{.RUST_DIR}}/Cargo.toml"
+
+  clean:
+    desc: Remove build artifacts (cargo + RPM output)
+    silent: true
+    cmds:
+      - echo "Cleaning..."
+      - cargo clean --manifest-path "{{.RUST_DIR}}/Cargo.toml"
+      - rm -rf "{{.ROOT_DIR}}/RPMS"
+
+  deploy:
+    desc: Install the built RPM on a phone (DEVICE=nemo@192.168.x.x)
+    silent: true
+    preconditions:
+      - sh: test -n "{{.DEVICE}}"
+        msg: "DEVICE is required, e.g. task deploy DEVICE=nemo@192.168.2.15"
+      - sh: test -n "$(find {{.ROOT_DIR}}/RPMS -name '*.rpm' -print -quit 2>/dev/null)"
+        msg: "No RPM found - run 'task build' first."
+    cmds:
+      - echo "Deploying to {{.DEVICE}}..."
+      - scp {{.ROOT_DIR}}/RPMS/wasserspiegel-*.rpm "{{.DEVICE}}:/home/nemo/wasserspiegel.rpm"
+      - ssh "{{.DEVICE}}" "devel-su pkcon install-local -y /home/nemo/wasserspiegel.rpm"

@@ -1,2 +1,22 @@
 # dotenv files
 .env*
+
+# Qt Creator / IDE
+*.pro.user
+
+# Rust
+rust/target/
+rust/include/
+
+# build artifacts (in-source qmake + sfdk shadow build)
+rpm/.build*
+RPMS/
+.sfdk/
+*.rpm
+*.trs
+Makefile
+*.o
+moc_*.cpp
+documentation.list
+wasserspiegel
+translations/*.qm
