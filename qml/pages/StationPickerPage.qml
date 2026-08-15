@@ -44,13 +44,6 @@ Page {
                 EnterKey.onClicked: appController.searchStations(text)
             }
 
-            Button {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: appController.gpsLocating ? qsTr("Locating...") : qsTr("Find nearest station (GPS)")
-                enabled: !appController.gpsLocating && !appController.stationsLoading
-                onClicked: appController.startGpsLookup()
-            }
-
             SectionHeader {
                 visible: page.searchText.length < 2 && appController.recentStations.length > 0
                 text: qsTr("Recent")
@@ -58,9 +51,9 @@ Page {
         }
 
         ViewPlaceholder {
-            enabled: listView.count === 0 && !appController.stationsLoading && !appController.gpsLocating
+            enabled: listView.count === 0 && !appController.stationsLoading
             text: page.searchText.length < 2
-                  ? qsTr("Search by city name or river, or use the GPS button above")
+                  ? qsTr("Search by city name or river")
                   : qsTr("No matching stations")
         }
 
@@ -97,13 +90,12 @@ Page {
 
     BusyIndicator {
         anchors.centerIn: parent
-        running: appController.stationsLoading || appController.gpsLocating
+        running: appController.stationsLoading
         size: BusyIndicatorSize.Large
     }
 
     Label {
-        visible: (appController.error !== "" || appController.gpsError !== "")
-                 && !appController.stationsLoading
+        visible: appController.error !== "" && !appController.stationsLoading
         anchors {
             left: parent.left
             right: parent.right
@@ -113,7 +105,7 @@ Page {
         wrapMode: Text.Wrap
         font.pixelSize: Theme.fontSizeExtraSmall
         color: Theme.errorColor
-        text: appController.gpsError !== "" ? appController.gpsError : appController.error
+        text: appController.error
     }
 
     Connections {
@@ -122,10 +114,6 @@ Page {
             if (page.searchText.length >= 2) {
                 appController.searchStations(page.searchText)
             }
-        }
-        onNearestStationFound: {
-            if (pageStack.depth > 1) pageStack.pop()
-            else pageStack.replace(Qt.resolvedUrl("DashboardPage.qml"))
         }
     }
 }

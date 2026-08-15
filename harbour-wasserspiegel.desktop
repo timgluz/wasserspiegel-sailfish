@@ -16,4 +16,4 @@ OrganizationName=org.timgluz
 # ApplicationName does not have to be identical to Name
 ApplicationName=harbour-wasserspiegel
 # Add the required permissions here (semicolon-separated)
-Permissions=Internet;Location
+Permissions=Internet

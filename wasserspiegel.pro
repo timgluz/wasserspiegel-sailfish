@@ -14,7 +14,7 @@ TARGET = harbour-wasserspiegel
 
 CONFIG += sailfishapp c++17
 CONFIG += exceptions
-QT += concurrent positioning
+QT += concurrent
 
 SOURCES += src/wasserspiegel.cpp \
     src/appcontroller.cpp
