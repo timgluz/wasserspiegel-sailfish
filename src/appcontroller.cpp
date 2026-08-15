@@ -67,8 +67,9 @@ QString logLevelName(QtMsgType type)
     return QStringLiteral("?");
 }
 
-// Raw POSIX log file (immune to QFile/sandbox interactions). Tries the
-// runtime dir first (always writable under sailjail), then cache/share/home.
+// Raw POSIX log file (immune to QFile/sandbox interactions). Primary target
+// is the app's cache location (persistent under sailjail when the desktop
+// OrganizationName matches the runtime org).
 int logFd()
 {
     static int fd = -1;
@@ -76,15 +77,11 @@ int logFd()
         return fd;
 
     QStringList candidates;
+    candidates << QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
+                      + QStringLiteral("/debug.log");
     const QByteArray runtime = qgetenv("XDG_RUNTIME_DIR");
     if (!runtime.isEmpty())
         candidates << QString::fromUtf8(runtime) + QStringLiteral("/wasserspiegel-debug.log");
-    const QByteArray home = qgetenv("HOME");
-    if (!home.isEmpty()) {
-        candidates << QString::fromUtf8(home) + QStringLiteral("/.cache/wasserspiegel/debug.log");
-        candidates << QString::fromUtf8(home) + QStringLiteral("/.local/share/wasserspiegel/debug.log");
-        candidates << QString::fromUtf8(home) + QStringLiteral("/wasserspiegel-debug.log");
-    }
     candidates << QStringLiteral("/tmp/wasserspiegel-debug.log");
 
     for (const QString &p : candidates) {

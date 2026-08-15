@@ -12,8 +12,7 @@ Name=wasserspiegel
 Name[de]=wasserspiegel
 
 [X-Sailjail]
-# Replace with your organization as a reverse domain name
-OrganizationName=org.myorg
+OrganizationName=org.timgluz
 # ApplicationName does not have to be identical to Name
 ApplicationName=wasserspiegel
 # Add the required permissions here
