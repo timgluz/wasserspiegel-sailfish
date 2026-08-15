@@ -36,7 +36,7 @@ Page {
             SearchField {
                 id: searchField
                 width: parent.width
-                placeholderText: qsTr("e.g. Mannheim or Rhein")
+                placeholderText: qsTr("City name or river, e.g. Mannheim")
                 onTextChanged: {
                     page.searchText = text
                     appController.searchStations(text)
@@ -49,7 +49,7 @@ Page {
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: page.locating ? qsTr("Locating...") : qsTr("Find nearest station")
+                text: page.locating ? qsTr("Locating...") : qsTr("Find nearest station (GPS)")
                 enabled: !page.locating && !appController.stationsLoading
                 onClicked: {
                     page.locateError = ""
@@ -68,7 +68,7 @@ Page {
         ViewPlaceholder {
             enabled: listView.count === 0 && !appController.stationsLoading && !page.locating
             text: page.searchText.length < 2
-                  ? qsTr("Search by name or river, or use GPS")
+                  ? qsTr("Search by city name or river, or use the GPS button above")
                   : qsTr("No matching stations")
         }
 
