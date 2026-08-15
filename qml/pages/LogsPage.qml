@@ -27,10 +27,7 @@ Page {
                 }
                 Button {
                     text: qsTr("Copy")
-                    onClicked: {
-                        Clipboard.text = logLabel.text
-                        banner.notify(qsTr("Logs copied to clipboard"))
-                    }
+                    onClicked: Clipboard.text = logLabel.text
                 }
             }
 
@@ -52,10 +49,6 @@ Page {
         running: status === PageStatus.Active
         repeat: true
         onTriggered: refreshLog()
-    }
-
-    Banner {
-        id: banner
     }
 
     function refreshLog() {

@@ -67,25 +67,30 @@ QString logLevelName(QtMsgType type)
     return QStringLiteral("?");
 }
 
-// Raw POSIX log file (immune to QFile/sandbox interactions). Resolved once,
-// lazily, with mkdir fallbacks across the candidate cache locations.
+// Raw POSIX log file (immune to QFile/sandbox interactions). Tries the
+// runtime dir first (always writable under sailjail), then cache/share/home.
 int logFd()
 {
     static int fd = -1;
     if (fd >= 0)
         return fd;
-    const char *paths[] = {
-        "/home/defaultuser/.cache/wasserspiegel/debug.log",
-        "/home/defaultuser/wasserspiegel-debug.log",
-        "/tmp/wasserspiegel-debug.log",
-    };
-    for (const char *p : paths) {
-        // ensure the parent directory exists
-        QByteArray dir(p);
-        const int slash = dir.lastIndexOf('/');
-        if (slash > 0)
-            ::mkdir(dir.left(slash).constData(), 0755);
-        fd = ::open(p, O_WRONLY | O_CREAT | O_APPEND, 0644);
+
+    QStringList candidates;
+    const QByteArray runtime = qgetenv("XDG_RUNTIME_DIR");
+    if (!runtime.isEmpty())
+        candidates << QString::fromUtf8(runtime) + QStringLiteral("/wasserspiegel-debug.log");
+    const QByteArray home = qgetenv("HOME");
+    if (!home.isEmpty()) {
+        candidates << QString::fromUtf8(home) + QStringLiteral("/.cache/wasserspiegel/debug.log");
+        candidates << QString::fromUtf8(home) + QStringLiteral("/.local/share/wasserspiegel/debug.log");
+        candidates << QString::fromUtf8(home) + QStringLiteral("/wasserspiegel-debug.log");
+    }
+    candidates << QStringLiteral("/tmp/wasserspiegel-debug.log");
+
+    for (const QString &p : candidates) {
+        const QByteArray dir = QFileInfo(p).absolutePath().toUtf8();
+        ::mkdir(dir.constData(), 0755);
+        fd = ::open(p.toUtf8().constData(), O_WRONLY | O_CREAT | O_APPEND, 0644);
         if (fd >= 0)
             return fd;
     }
