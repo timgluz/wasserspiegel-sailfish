@@ -37,6 +37,54 @@ tasks:
       - echo "Building the app (--prepare so source changes are picked up)..."
       - sfdk build --prepare
 
+  sign:setup:
+    desc: "Configure sfdk for RPM signing (SIGNING_USER + PASSPHRASE_FILE)"
+    silent: true
+    vars:
+      PASSPHRASE_FILE: '{{default "$HOME/passphrase.txt" .PASSPHRASE_FILE}}'
+    preconditions:
+      - sh: command -v sfdk
+        msg: "sfdk not found - install the Sailfish SDK and add it to PATH."
+      - sh: test -n "{{.SIGNING_USER}}"
+        msg: "SIGNING_USER is required, e.g. task sign:setup SIGNING_USER='Timo Sulg'"
+    cmds:
+      - echo "Configuring signing key '{{.SIGNING_USER}}'..."
+      - sfdk config --global --push package.signing.user "{{.SIGNING_USER}}"
+      - sfdk config --global --push package.signing-passphrase-file "{{.PASSPHRASE_FILE}}"
+
+  sign:
+    desc: "Build and sign the RPM (commit first; run sign:setup once)"
+    silent: true
+    preconditions:
+      - sh: command -v sfdk
+        msg: "sfdk not found - install the Sailfish SDK and add it to PATH."
+    deps:
+      - engine:rust
+    cmds:
+      - echo "Building and signing..."
+      - sfdk build --prepare --sign
+
+  verify:
+    desc: "Verify the RPM signature (rpm -K)"
+    silent: true
+    preconditions:
+      - sh: command -v rpm
+        msg: "rpm not found - install the rpm tools."
+      - sh: test -n "$(find {{.ROOT_DIR}}/RPMS -name '*.rpm' -print -quit 2>/dev/null)"
+        msg: "No RPM found - run 'task sign' first."
+    cmds:
+      - rpm -K {{.ROOT_DIR}}/RPMS/wasserspiegel-*.rpm
+
+  check:
+    desc: "Run Harbour + rpmlint quality checks on the RPM (sfdk check)"
+    silent: true
+    preconditions:
+      - sh: command -v sfdk
+        msg: "sfdk not found - install the Sailfish SDK and add it to PATH."
+    cmds:
+      - echo "Running quality checks (Harbour + rpmlint)..."
+      - sfdk check
+
   engine:setup:
     desc: "One-time build-engine setup (Rust toolchain + credential forwarding)"
     silent: true

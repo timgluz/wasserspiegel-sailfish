@@ -215,9 +215,36 @@ may restrict writes). The in-app Logs page is the most reliable source.
 | `task engine:rust` | cross-compile the Rust core for aarch64 in the engine |
 | `task build` | `engine:rust` + `sfdk build --prepare` |
 | `task deploy` | scp + `pkcon install-local` (default `defaultuser@192.168.2.15`) |
+| `task sign:setup` | configure sfdk for RPM signing (once) |
+| `task sign` | build + sign the RPM (`sfdk build --prepare --sign`) |
+| `task verify` | verify the RPM signature (`rpm -K`) |
 | `task test` / `task test:live` / `task smoke` | Rust tests / live API / host bridge smoke |
 | `task test:all` | all of the above |
 | `task lint` / `task fmt` | clippy + rustfmt on the Rust core |
+
+### Signing packages
+
+See the [official docs](https://docs.sailfishos.org/Develop/Apps/Packaging/Signing_Packages)
+for details. One-time setup:
+
+```sh
+gpg --gen-key                                   # create a signing key (note the name)
+
+task sign:setup SIGNING_USER="Timo Sulg"        # configures sfdk
+# optional: custom passphrase file location
+task sign:setup SIGNING_USER="Timo Sulg" PASSPHRASE_FILE="$HOME/.config/passphrase.txt"
+
+task sign                                       # build + sign
+task verify                                     # rpm -K on the built package
+```
+
+The first `task verify` may report `digests SIGNATURES NOT OK` until the
+key is imported into the rpm keyring:
+
+```sh
+gpg --output keyfile.gpg --armor --export "Timo Sulg"
+rpm --import keyfile.gpg
+```
 
 ## Troubleshooting
 

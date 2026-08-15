@@ -86,6 +86,26 @@ Page {
                     font.pixelSize: Theme.fontSizeSmall
                 }
             }
+
+            SectionHeader {
+                text: qsTr("Changelog")
+            }
+
+            Label {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                x: Theme.horizontalPageMargin
+                wrapMode: Text.Wrap
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.secondaryColor
+                text: "0.2.0\n" +
+                      qsTr("  - Recent stations on the picker\n") +
+                      qsTr("  - Find nearest station via GPS\n") +
+                      qsTr("  - Logs page\n") +
+                      qsTr("  - About page\n") +
+                      qsTr("  - Demo data fallback\n\n") +
+                      "0.1.0\n" +
+                      qsTr("  - Initial release")
+            }
         }
     }
 }
