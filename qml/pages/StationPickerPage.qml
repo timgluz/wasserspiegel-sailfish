@@ -7,6 +7,7 @@ Page {
 
     property bool locating: false
     property string locateError: ""
+    property string searchText: ""
 
     SilicaListView {
         id: listView
@@ -36,7 +37,10 @@ Page {
                 id: searchField
                 width: parent.width
                 placeholderText: qsTr("e.g. Mannheim or Rhein")
-                onTextChanged: appController.searchStations(text)
+                onTextChanged: {
+                    page.searchText = text
+                    appController.searchStations(text)
+                }
 
                 EnterKey.enabled: text.length > 0
                 EnterKey.iconSource: "image://theme/icon-m-search"
@@ -56,19 +60,19 @@ Page {
             }
 
             SectionHeader {
-                visible: searchField.text.length < 2 && appController.recentStations.length > 0
+                visible: page.searchText.length < 2 && appController.recentStations.length > 0
                 text: qsTr("Recent")
             }
         }
 
         ViewPlaceholder {
             enabled: listView.count === 0 && !appController.stationsLoading && !page.locating
-            text: searchField.text.length < 2
+            text: page.searchText.length < 2
                   ? qsTr("Search by name or river, or use GPS")
                   : qsTr("No matching stations")
         }
 
-        model: searchField.text.length >= 2
+        model: page.searchText.length >= 2
                ? appController.searchResults
                : appController.recentStations
 
@@ -140,11 +144,9 @@ Page {
                 page.locating = false
                 var msg
                 if (positionSource.sourceError === PositionSource.AccessError) {
-                    msg = qsTr("Location access denied")
+                    msg = qsTr("Location service unavailable")
                 } else if (positionSource.sourceError === PositionSource.ClosedError) {
                     msg = qsTr("Location service closed")
-                } else if (positionSource.sourceError === PositionSource.UpdateTimeoutError) {
-                    msg = qsTr("Location timeout")
                 } else {
                     msg = qsTr("Location error (%1)").arg(positionSource.sourceError)
                 }
@@ -166,8 +168,8 @@ Page {
     Connections {
         target: appController
         onStationListReady: {
-            if (searchField.text.length >= 2) {
-                appController.searchStations(searchField.text)
+            if (page.searchText.length >= 2) {
+                appController.searchStations(page.searchText)
             }
         }
         onNearestStationFound: {
