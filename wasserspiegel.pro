@@ -26,6 +26,7 @@ DISTFILES += qml/wasserspiegel.qml \
     qml/pages/DashboardPage.qml \
     qml/pages/StationPickerPage.qml \
     qml/pages/SettingsPage.qml \
+    qml/pages/LogsPage.qml \
     qml/pages/TrendGraph.qml \
     rpm/wasserspiegel.changes.in \
     rpm/wasserspiegel.changes.run.in \

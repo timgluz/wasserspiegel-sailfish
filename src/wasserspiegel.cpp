@@ -11,6 +11,8 @@
 
 int main(int argc, char *argv[])
 {
+    wsInstallMessageHandler();
+
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     app->setOrganizationName(QStringLiteral("wasserspiegel"));
     app->setApplicationName(QStringLiteral("wasserspiegel"));

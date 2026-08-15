@@ -57,6 +57,10 @@ class AppController : public QObject
     Q_PROPERTY(QString apiToken READ apiToken WRITE setApiToken NOTIFY settingsChanged)
     Q_PROPERTY(bool configured READ configured NOTIFY settingsChanged)
 
+    // set when the API is not configured or a fetch failed due to
+    // bad/expired credentials - the UI offers the Settings page then
+    Q_PROPERTY(bool needsConfig READ needsConfig NOTIFY needsConfigChanged)
+
 public:
     explicit AppController(QObject *parent = nullptr);
     ~AppController() override;
@@ -68,6 +72,7 @@ public:
     Q_INVOKABLE void searchStations(const QString &query);
     Q_INVOKABLE void applySettings(const QString &apiBase, const QString &apiToken);
     Q_INVOKABLE void testConnection();
+    Q_INVOKABLE QString logText() const;
 
     // property getters
     QString stationId() const { return m_stationId; }
@@ -95,6 +100,7 @@ public:
     QString apiBase() const { return m_apiBase; }
     QString apiToken() const { return m_apiToken; }
     bool configured() const { return !m_apiBase.isEmpty() && !m_apiToken.isEmpty(); }
+    bool needsConfig() const { return m_needsConfig; }
 
     void setGraphPeriodHours(int hours);
     void setApiBase(const QString &value);
@@ -110,6 +116,7 @@ signals:
     void settingsChanged();
     void connectionTested(bool ok, const QString &message);
     void stationListReady();
+    void needsConfigChanged();
 
 private:
     void populateFromMetrics(const wasserspiegel::FfiStationMetrics &metrics, bool persist);
@@ -117,6 +124,8 @@ private:
     void recomputeSeries();
     void ensureStationListLoaded();
     void setError(const QString &message);
+    void setNeedsConfig(bool value);
+    void applyDemoData();
     bool createClient();
     QVariantList summariesToVariantList(
         const rust::Vec<wasserspiegel::FfiStationSummary> &list);
@@ -157,6 +166,13 @@ private:
 
     QString m_apiBase;
     QString m_apiToken;
+
+    bool m_needsConfig = false;
 };
+
+// Installs the Qt message handler that captures qDebug/qWarning output
+// (including QML errors) into the in-memory ring buffer exposed via
+// AppController::logText().
+void wsInstallMessageHandler();
 
 #endif // APPCONTROLLER_H

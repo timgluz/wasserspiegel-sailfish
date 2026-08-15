@@ -29,7 +29,7 @@ Page {
                 inputMethodHints: Qt.ImhUrlCharactersOnly
                 EnterKey.enabled: text.trimmed().length > 0
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
-                onEnterClicked: apiTokenField.focus = true
+                EnterKey.onClicked: apiTokenField.focus = true
             }
 
             TextField {
@@ -41,7 +41,7 @@ Page {
                 text: appController.apiToken
                 EnterKey.enabled: text.trimmed().length > 0
                 EnterKey.iconSource: "image://theme/icon-m-enter-accept"
-                onEnterClicked: saveButton.clicked()
+                EnterKey.onClicked: saveButton.clicked()
             }
 
             Button {
@@ -86,6 +86,16 @@ Page {
         onConnectionTested: {
             page.testOk = ok
             page.testResult = message
+            if (ok) {
+                // credentials work - go back so the dashboard refreshes
+                autoPop.start()
+            }
         }
+    }
+
+    Timer {
+        id: autoPop
+        interval: 1500
+        onTriggered: pageStack.pop()
     }
 }

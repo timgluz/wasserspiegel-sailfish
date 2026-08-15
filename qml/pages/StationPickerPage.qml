@@ -16,6 +16,10 @@ Page {
                 text: qsTr("Reload station list")
                 onClicked: appController.testConnection()
             }
+            MenuItem {
+                text: qsTr("Settings")
+                onClicked: pageStack.push(Qt.resolvedUrl("SettingsPage.qml"))
+            }
         }
 
         header: Column {
@@ -33,7 +37,7 @@ Page {
 
                 EnterKey.enabled: text.length > 0
                 EnterKey.iconSource: "image://theme/icon-m-search"
-                onEnterClicked: appController.searchStations(text)
+                EnterKey.onClicked: appController.searchStations(text)
             }
         }
 

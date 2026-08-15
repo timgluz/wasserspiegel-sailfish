@@ -6,13 +6,6 @@ Page {
 
     readonly property bool hasData: appController.seriesPoints.length > 1
 
-    onStatusChanged: {
-        if (status === PageStatus.Active && !appController.hasStation) {
-            // first launch: go pick a station
-            pageStack.replace(Qt.resolvedUrl("StationPickerPage.qml"))
-        }
-    }
-
     SilicaFlickable {
         anchors.fill: parent
         contentHeight: content.height
@@ -31,6 +24,10 @@ Page {
                 text: qsTr("Refresh")
                 onClicked: appController.refresh()
             }
+            MenuItem {
+                text: qsTr("Logs")
+                onClicked: pageStack.push(Qt.resolvedUrl("LogsPage.qml"))
+            }
         }
 
         Column {
@@ -39,9 +36,33 @@ Page {
             spacing: Theme.paddingMedium
 
             PageHeader {
-                title: appController.hasStation
+                title: appController.stationName !== ""
                        ? (appController.stationName + " / " + appController.water)
                        : qsTr("Wasserspiegel")
+            }
+
+            // ---- config banner (tap to open Settings) ----
+
+            BackgroundItem {
+                visible: appController.needsConfig
+                width: parent.width
+                height: Theme.itemSizeSmall
+
+                onClicked: pageStack.push(Qt.resolvedUrl("SettingsPage.qml"))
+
+                Label {
+                    anchors {
+                        left: parent.left
+                        leftMargin: Theme.horizontalPageMargin
+                        right: parent.right
+                        rightMargin: Theme.horizontalPageMargin
+                        verticalCenter: parent.verticalCenter
+                    }
+                    text: qsTr("API not configured - tap to set up")
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.highlightColor
+                    wrapMode: Text.Wrap
+                }
             }
 
             // ---- current level ----
@@ -100,6 +121,19 @@ Page {
                     color: Theme.secondaryHighlightColor
                     font.pixelSize: Theme.fontSizeExtraSmall
                 }
+            }
+
+            // ---- demo data hint ----
+
+            Label {
+                visible: !appController.hasStation
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                x: Theme.horizontalPageMargin
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+                font.pixelSize: Theme.fontSizeExtraSmall
+                color: Theme.secondaryColor
+                text: qsTr("Demo data - pick a station for live readings")
             }
 
             // ---- offline / error notices ----

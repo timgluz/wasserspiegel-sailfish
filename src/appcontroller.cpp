@@ -1,10 +1,15 @@
 #include "appcontroller.h"
 
+#include <QDateTime>
+#include <QMutex>
+#include <QMutexLocker>
 #include <QPointer>
 #include <QStandardPaths>
 #include <QtConcurrent>
 #include <QTimer>
 
+#include <cmath>
+#include <cstdio>
 #include <stdexcept>
 
 #ifndef WASSERSPIEGEL_DEFAULT_API_BASE
@@ -36,7 +41,55 @@ QString cacheDir()
     return base + QStringLiteral("/cache");
 }
 
+// ---- in-memory log ring buffer (shown on the Logs page) ----
+
+QMutex g_logMutex;
+QStringList g_logLines;
+const int g_maxLogLines = 400;
+
+QString logLevelName(QtMsgType type)
+{
+    switch (type) {
+    case QtDebugMsg: return QStringLiteral("D");
+    case QtWarningMsg: return QStringLiteral("W");
+    case QtCriticalMsg: return QStringLiteral("C");
+    case QtFatalMsg: return QStringLiteral("F");
+    case QtInfoMsg: return QStringLiteral("I");
+    }
+    return QStringLiteral("?");
+}
+
+void wsMessageHandler(QtMsgType type, const QMessageLogContext &ctx, const QString &msg)
+{
+    Q_UNUSED(ctx);
+    const QString line = QStringLiteral("%1 %2 %3")
+        .arg(QDateTime::currentDateTime().toString(QStringLiteral("HH:mm:ss.zzz")),
+             logLevelName(type), msg);
+    {
+        QMutexLocker lock(&g_logMutex);
+        g_logLines.append(line);
+        while (g_logLines.size() > g_maxLogLines)
+            g_logLines.removeFirst();
+    }
+    std::fprintf(stderr, "%s\n", line.toUtf8().constData());
+    std::fflush(stderr);
+}
+
+// Errors from the Rust core that indicate bad/expired credentials or a
+// missing API configuration - these should surface the Settings page.
+bool isConfigError(const QString &msg)
+{
+    return msg.contains(QStringLiteral("authentication"))
+        || msg.contains(QStringLiteral("configuration"))
+        || msg.contains(QStringLiteral("not configured"));
+}
+
 } // namespace
+
+void wsInstallMessageHandler()
+{
+    qInstallMessageHandler(wsMessageHandler);
+}
 
 AppController::AppController(QObject *parent)
     : QObject(parent)
@@ -63,10 +116,15 @@ void AppController::initialize()
     m_water = m_settings.value(QStringLiteral("station/water")).toString();
 
     createClient();
+    setNeedsConfig(!configured());
 
     if (!m_stationId.isEmpty()) {
         loadCachedIntoView(m_stationId);
         refresh();
+    } else {
+        // first launch or no station yet: seed the UI with demo data so
+        // it never looks broken; the user picks a real station later
+        applyDemoData();
     }
     emit settingsChanged();
     emit stationChanged();
@@ -76,6 +134,7 @@ bool AppController::createClient()
 {
     if (m_apiBase.isEmpty() || m_apiToken.isEmpty()) {
         m_clientReady = false;
+        setNeedsConfig(true);
         return false;
     }
     try {
@@ -89,6 +148,7 @@ bool AppController::createClient()
         m_client.reset();
         m_clientReady = false;
         setError(QObject::tr("API configuration invalid: %1").arg(QString::fromUtf8(e.what())));
+        setNeedsConfig(true);
         return false;
     }
 }
@@ -127,6 +187,7 @@ void AppController::refresh()
             emit guard->loadingChanged();
             if (metrics) {
                 guard->setError(QString());
+                guard->setNeedsConfig(false);
                 guard->populateFromMetrics(*metrics, true);
             } else {
                 guard->setError(error);
@@ -415,6 +476,13 @@ void AppController::testConnection()
                 guard->m_stationList = *list;
                 emit guard->stationListReady();
             }
+            if (ok) {
+                guard->setError(QString());
+                guard->setNeedsConfig(false);
+                // credentials work now - refresh the dashboard if a station is set
+                if (!guard->m_stationId.isEmpty())
+                    guard->refresh();
+            }
             emit guard->connectionTested(ok, message);
         });
     });
@@ -425,5 +493,51 @@ void AppController::setError(const QString &message)
     if (message == m_error)
         return;
     m_error = message;
+    if (!message.isEmpty() && isConfigError(message))
+        setNeedsConfig(true);
     emit errorChanged();
+}
+
+void AppController::setNeedsConfig(bool value)
+{
+    if (value == m_needsConfig)
+        return;
+    m_needsConfig = value;
+    emit needsConfigChanged();
+}
+
+void AppController::applyDemoData()
+{
+    m_stationId.clear();
+    m_stationName = QStringLiteral("Demo station");
+    m_water = QStringLiteral("Rhein");
+    m_km = 424.7;
+    m_currentLevel = 88.0;
+    m_unit = QStringLiteral("cm");
+    m_change1Day = 3.2;
+    m_change3Day = -1.8;
+    m_change7Day = 16.4;
+    m_fromCache = false;
+    m_lastUpdatedMs = 0;
+    m_hasData = true;
+
+    rust::Vec<wasserspiegel::FfiMeasurementPoint> history;
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    const int points = 288; // ~3 days at 15-minute intervals
+    for (int i = 0; i < points; ++i) {
+        wasserspiegel::FfiMeasurementPoint p;
+        p.timestamp_ms = now - qint64(points - i) * 15 * 60 * 1000LL;
+        p.value = 82.0 + 10.0 * std::sin(i / 16.0) + 3.0 * std::sin(i / 5.0);
+        history.push_back(p);
+    }
+    m_history = history;
+
+    recomputeSeries();
+    emit stationChanged();
+}
+
+QString AppController::logText() const
+{
+    QMutexLocker lock(&g_logMutex);
+    return g_logLines.join(QLatin1Char('\n'));
 }
