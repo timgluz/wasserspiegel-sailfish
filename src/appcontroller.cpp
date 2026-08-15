@@ -1,10 +1,14 @@
 #include "appcontroller.h"
 
 #include <QDateTime>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
 #include <QMutex>
 #include <QMutexLocker>
 #include <QPointer>
 #include <QStandardPaths>
+#include <QTextStream>
 #include <QtConcurrent>
 #include <QTimer>
 
@@ -73,6 +77,21 @@ void wsMessageHandler(QtMsgType type, const QMessageLogContext &ctx, const QStri
     }
     std::fprintf(stderr, "%s\n", line.toUtf8().constData());
     std::fflush(stderr);
+
+    // also append to a file for on-device debugging (the Logs page shows
+    // the in-memory buffer; the file survives crashes)
+    static QFile f;
+    if (!f.isOpen()) {
+        const QString path = QStringLiteral("/home/defaultuser/.cache/wasserspiegel/debug.log");
+        QDir().mkpath(QFileInfo(path).absolutePath());
+        f.setFileName(path);
+        f.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+    }
+    if (f.isOpen()) {
+        QTextStream ts(&f);
+        ts << line << QLatin1Char('\n');
+        ts.flush();
+    }
 }
 
 // Errors from the Rust core that indicate bad/expired credentials or a
