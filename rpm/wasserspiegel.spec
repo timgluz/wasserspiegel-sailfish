@@ -1,4 +1,4 @@
-Name:       wasserspiegel
+Name:       harbour-wasserspiegel
 
 Summary:    Water level dashboard for PegelOnline stations
 Version:    0.2

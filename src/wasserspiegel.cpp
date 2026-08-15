@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     wsInstallMessageHandler();
 
     app->setOrganizationName(QStringLiteral("org.timgluz"));
-    app->setApplicationName(QStringLiteral("wasserspiegel"));
+    app->setApplicationName(QStringLiteral("harbour-wasserspiegel"));
 
     AppController controller;
     controller.initialize();

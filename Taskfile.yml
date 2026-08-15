@@ -73,7 +73,7 @@ tasks:
       - sh: test -n "$(find {{.ROOT_DIR}}/RPMS -name '*.rpm' -print -quit 2>/dev/null)"
         msg: "No RPM found - run 'task sign' first."
     cmds:
-      - rpm -K {{.ROOT_DIR}}/RPMS/wasserspiegel-*.rpm
+      - rpm -K {{.ROOT_DIR}}/RPMS/harbour-wasserspiegel-*.rpm
 
   check:
     desc: "Run Harbour + rpmlint quality checks on the RPM (sfdk check)"
@@ -183,5 +183,5 @@ tasks:
         msg: "JOLLA_SSH_PASSWORD not set - source .envrc"
     cmds:
       - echo "Deploying to {{.DEVICE}}..."
-      - scp {{.ROOT_DIR}}/RPMS/wasserspiegel-*.rpm "{{.DEVICE}}:/tmp/wasserspiegel.rpm"
-      - ssh "{{.DEVICE}}" "echo '$JOLLA_SSH_PASSWORD' | devel-su pkcon install-local -y /tmp/wasserspiegel.rpm"
+      - scp {{.ROOT_DIR}}/RPMS/harbour-wasserspiegel-*.rpm "{{.DEVICE}}:/tmp/harbour-wasserspiegel.rpm"
+      - ssh "{{.DEVICE}}" "echo '$JOLLA_SSH_PASSWORD' | devel-su pkcon install-local -y /tmp/harbour-wasserspiegel.rpm"

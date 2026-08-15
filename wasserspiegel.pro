@@ -10,7 +10,7 @@
 #   - translation filenames have to be changed
 
 # The name of your application
-TARGET = wasserspiegel
+TARGET = harbour-wasserspiegel
 
 CONFIG += sailfishapp c++17
 CONFIG += exceptions
@@ -21,7 +21,7 @@ SOURCES += src/wasserspiegel.cpp \
 
 HEADERS += src/appcontroller.h
 
-DISTFILES += qml/wasserspiegel.qml \
+DISTFILES += qml/harbour-wasserspiegel.qml \
     qml/cover/CoverPage.qml \
     qml/pages/DashboardPage.qml \
     qml/pages/StationPickerPage.qml \
@@ -33,7 +33,7 @@ DISTFILES += qml/wasserspiegel.qml \
     rpm/wasserspiegel.changes.run.in \
     rpm/wasserspiegel.spec \
     translations/*.ts \
-    wasserspiegel.desktop
+    harbour-wasserspiegel.desktop
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
@@ -88,4 +88,4 @@ CONFIG += sailfishapp_i18n
 # planning to localize your app, remember to comment out
 # the following TRANSLATIONS line. And also do not forget to
 # modify the localized app name in the the desktop file.
-TRANSLATIONS += translations/wasserspiegel-de.ts
+TRANSLATIONS += translations/harbour-wasserspiegel-de.ts
