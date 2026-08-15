@@ -27,7 +27,7 @@ Page {
                 placeholderText: "https://wasserspiegel.example.org"
                 text: appController.apiBase
                 inputMethodHints: Qt.ImhUrlCharactersOnly
-                EnterKey.enabled: text.trimmed().length > 0
+                EnterKey.enabled: text.trim().length > 0
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
                 EnterKey.onClicked: apiTokenField.focus = true
             }
@@ -39,7 +39,7 @@ Page {
                 placeholderText: qsTr("Bearer token")
                 echoMode: TextInput.Password
                 text: appController.apiToken
-                EnterKey.enabled: text.trimmed().length > 0
+                EnterKey.enabled: text.trim().length > 0
                 EnterKey.iconSource: "image://theme/icon-m-enter-accept"
                 EnterKey.onClicked: saveButton.clicked()
             }
@@ -48,13 +48,13 @@ Page {
                 id: saveButton
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Save & test")
-                enabled: apiBaseField.text.trimmed().length > 0
-                         && apiTokenField.text.trimmed().length > 0
+                enabled: apiBaseField.text.trim().length > 0
+                         && apiTokenField.text.trim().length > 0
 
                 onClicked: {
                     testResult = ""
-                    appController.applySettings(apiBaseField.text.trimmed(),
-                                                apiTokenField.text.trimmed())
+                    appController.applySettings(apiBaseField.text.trim(),
+                                                apiTokenField.text.trim())
                     appController.testConnection()
                 }
             }

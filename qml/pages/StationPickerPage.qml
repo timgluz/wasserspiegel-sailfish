@@ -133,11 +133,13 @@ Page {
             }
         }
 
-        onSourceError: {
-            positionSource.active = false
-            locationTimeout.stop()
-            page.locating = false
-            page.locateError = qsTr("Location error: %1").arg(sourceError)
+        onSourceErrorChanged: {
+            if (positionSource.sourceError !== PositionSource.NoError) {
+                positionSource.active = false
+                locationTimeout.stop()
+                page.locating = false
+                page.locateError = qsTr("Location error")
+            }
         }
     }
 
