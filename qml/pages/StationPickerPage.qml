@@ -138,7 +138,17 @@ Page {
                 positionSource.active = false
                 locationTimeout.stop()
                 page.locating = false
-                page.locateError = qsTr("Location error")
+                var msg
+                if (positionSource.sourceError === PositionSource.AccessError) {
+                    msg = qsTr("Location access denied")
+                } else if (positionSource.sourceError === PositionSource.ClosedError) {
+                    msg = qsTr("Location service closed")
+                } else if (positionSource.sourceError === PositionSource.UpdateTimeoutError) {
+                    msg = qsTr("Location timeout")
+                } else {
+                    msg = qsTr("Location error (%1)").arg(positionSource.sourceError)
+                }
+                page.locateError = msg
             }
         }
     }
