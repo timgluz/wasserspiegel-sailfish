@@ -50,7 +50,7 @@ tasks:
     cmds:
       - echo "Configuring signing key '{{.SIGNING_USER}}'..."
       - sfdk config --global --push package.signing-user "{{.SIGNING_USER}}"
-      - sfdk config --global --push package.signing-passphrase-file "{{.PASSPHRASE_FILE}}"
+      - 'test -f "{{.PASSPHRASE_FILE}}" && sfdk config --global --push package.signing-passphrase-file "{{.PASSPHRASE_FILE}}" || echo "(no passphrase file - passwordless key)"'
 
   sign:
     desc: "Build and sign the RPM (commit first; run sign:setup once)"
