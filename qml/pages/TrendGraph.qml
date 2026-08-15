@@ -90,7 +90,7 @@ Item {
         font.pixelSize: Theme.fontSizeExtraSmall
         color: Theme.secondaryColor
         text: graph.startMs > 0
-              ? Format.formatDate(new Date(graph.startMs), Formatter.DateInternal)
+              ? Format.formatDate(new Date(graph.startMs), Formatter.Timepoint)
               : ""
     }
     Label {
@@ -98,7 +98,7 @@ Item {
         font.pixelSize: Theme.fontSizeExtraSmall
         color: Theme.secondaryColor
         text: graph.endMs > 0
-              ? Format.formatDate(new Date(graph.endMs), Formatter.DateInternal)
+              ? Format.formatDate(new Date(graph.endMs), Formatter.Timepoint)
               : ""
     }
 

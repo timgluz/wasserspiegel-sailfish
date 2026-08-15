@@ -32,11 +32,19 @@ TRMNL plugin): `GET /stations` for the station list and
   export PATH="${HOME}/SailfishOS/bin:$PATH"   # add to ~/.zshrc / ~/.bashrc
   ```
 - [Task](https://taskfile.dev) 3.x (`task` binary) - optional but handy
-- Network access; API credentials in `.envrc` (untracked):
+- Network access; secrets in `.envrc` (untracked). Copy `env.example` or
+  just create it - both the build and `task deploy` read from here:
 
   ```sh
+  # source this in every shell (or `direnv allow .`)
   export WASSERSPIEGEL_API="https://wasserspiegel-hnhptksa.fermyon.app"
-  export WASSERSPIEGEL_TOKEN="..."
+  export WASSERSPIEGEL_TOKEN="..."                 # API bearer token
+  export JOLLA_SSH_PASSWORD="..."                  # phone developer password
+                                                    # (Developer tools -> Remote connection)
+  ```
+
+  ```sh
+  source .envrc    # or: direnv allow .
   ```
 
 Before the first build, point sfdk at the installed SDK target:
@@ -123,22 +131,31 @@ Notes:
 
 1. Settings -> Developer tools -> enable **Developer mode** and
    **Remote connection (SSH)**; set a password and note the IP shown
-   (e.g. `192.168.2.15`). Default user is `nemo`.
-2. Make sure the phone and your host are on the same network (or use USB
+   (e.g. `192.168.2.15`). The SSH user is `defaultuser` on Sailfish OS
+   4.4+ (older releases use `nemo`).
+2. Put that developer password in `.envrc` as `JOLLA_SSH_PASSWORD`
+   (see step 1) - `task deploy` uses it to run `devel-su`.
+3. Make sure the phone and your host are on the same network (or use USB
    networking).
 
 ### 7. Install and run
 
 ```sh
-task deploy DEVICE=nemo@192.168.2.15
+source .envrc                        # needed for JOLLA_SSH_PASSWORD
+task deploy                          # uses the default DEVICE from Taskfile.yml
+task deploy DEVICE=nemo@10.0.0.2     # one-off override
 ```
 
 which is equivalent to:
 
 ```sh
-scp RPMS/wasserspiegel-*.rpm nemo@192.168.2.15:/home/nemo/wasserspiegel.rpm
-ssh nemo@192.168.2.15 "devel-su pkcon install-local -y /home/nemo/wasserspiegel.rpm"
+scp RPMS/wasserspiegel-*.rpm defaultuser@192.168.2.15:/tmp/wasserspiegel.rpm
+ssh defaultuser@192.168.2.15 "echo '$JOLLA_SSH_PASSWORD' | devel-su pkcon install-local -y /tmp/wasserspiegel.rpm"
 ```
+
+(The RPM is staged in `/tmp/` on the phone, so the user's home dir doesn't
+matter - `defaultuser` vs `nemo`. `pkcon install-local` reinstalls the same
+version, so re-deploying after a rebuild works.)
 
 Re-running the same command upgrades the installed package (same version,
 new build). Then launch **Wasserspiegel** from the app grid.
@@ -158,8 +175,8 @@ new build). Then launch **Wasserspiegel** from the app grid.
 ### Updating & logs
 
 ```sh
-task build && task deploy DEVICE=nemo@192.168.2.15
-ssh nemo@192.168.2.15   # then: journalctl --user -f | grep -i wasserspiegel
+task build && task deploy
+ssh defaultuser@192.168.2.15   # then: journalctl --user -f | grep -i wasserspiegel
 ```
 
 ## Taskfile quick reference
@@ -169,7 +186,7 @@ ssh nemo@192.168.2.15   # then: journalctl --user -f | grep -i wasserspiegel
 | `task engine:setup` | one-time Rust toolchain setup in the SDK engine |
 | `task engine:rust` | cross-compile the Rust core for aarch64 in the engine |
 | `task build` | `engine:rust` + `sfdk build` |
-| `task deploy DEVICE=nemo@ip` | scp + `pkcon install-local` on the phone |
+| `task deploy` | scp + `pkcon install-local` (default `defaultuser@192.168.2.15`) |
 | `task test` / `task test:live` / `task smoke` | Rust tests / live API / host bridge smoke |
 | `task test:all` | all of the above |
 | `task lint` / `task fmt` | clippy + rustfmt on the Rust core |
@@ -202,7 +219,7 @@ ssh nemo@192.168.2.15   # then: journalctl --user -f | grep -i wasserspiegel
 - **Auth error on refresh** - check the token in Settings; the API sends
   `401` on a bad token.
 - **App not in the app grid after install** - run
-  `ssh ... "devel-su pkcon install-local -y /home/nemo/wasserspiegel.rpm"`
+  `ssh ... "devel-su pkcon install-local -y /tmp/wasserspiegel.rpm"`
   again and watch for errors; a stale older version may need
   `devel-su pkcon remove wasserspiegel` first.
 

@@ -8,6 +8,8 @@ dotenv:
 vars:
   RUST_TARGET: aarch64-unknown-linux-gnu
   RUST_DIR: "{{.ROOT_DIR}}/rust"
+  # default phone target for `task deploy` (override: task deploy DEVICE=nemo@10.0.0.2)
+  DEVICE: defaultuser@192.168.2.15
 
 tasks:
   default:
@@ -122,14 +124,16 @@ tasks:
       - rm -rf "{{.ROOT_DIR}}/RPMS"
 
   deploy:
-    desc: Install the built RPM on a phone (DEVICE=nemo@192.168.x.x)
+    desc: "Install the built RPM on a phone (default: defaultuser@192.168.2.15)"
     silent: true
     preconditions:
       - sh: test -n "{{.DEVICE}}"
         msg: "DEVICE is required, e.g. task deploy DEVICE=nemo@192.168.2.15"
       - sh: test -n "$(find {{.ROOT_DIR}}/RPMS -name '*.rpm' -print -quit 2>/dev/null)"
         msg: "No RPM found - run 'task build' first."
+      - sh: test -n "$JOLLA_SSH_PASSWORD"
+        msg: "JOLLA_SSH_PASSWORD not set - source .envrc"
     cmds:
       - echo "Deploying to {{.DEVICE}}..."
-      - scp {{.ROOT_DIR}}/RPMS/wasserspiegel-*.rpm "{{.DEVICE}}:/home/nemo/wasserspiegel.rpm"
-      - ssh "{{.DEVICE}}" "devel-su pkcon install-local -y /home/nemo/wasserspiegel.rpm"
+      - scp {{.ROOT_DIR}}/RPMS/wasserspiegel-*.rpm "{{.DEVICE}}:/tmp/wasserspiegel.rpm"
+      - ssh "{{.DEVICE}}" "echo '$JOLLA_SSH_PASSWORD' | devel-su pkcon install-local -y /tmp/wasserspiegel.rpm"
