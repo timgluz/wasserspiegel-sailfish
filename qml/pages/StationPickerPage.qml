@@ -144,11 +144,11 @@ Page {
                 page.locating = false
                 var msg
                 if (positionSource.sourceError === PositionSource.AccessError) {
-                    msg = qsTr("Location service unavailable")
+                    msg = qsTr("Location is disabled — enable it in Settings")
                 } else if (positionSource.sourceError === PositionSource.ClosedError) {
                     msg = qsTr("Location service closed")
                 } else {
-                    msg = qsTr("Location error (%1)").arg(positionSource.sourceError)
+                    msg = qsTr("Could not determine location — check Location is enabled")
                 }
                 page.locateError = msg
             }
@@ -161,7 +161,7 @@ Page {
         onTriggered: {
             positionSource.active = false
             page.locating = false
-            page.locateError = qsTr("Could not determine location")
+            page.locateError = qsTr("Location timed out — check Location is enabled")
         }
     }
 
