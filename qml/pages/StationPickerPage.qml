@@ -1,10 +1,12 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import QtPositioning 5.0
 
 Page {
     id: page
 
-    property string pendingQuery
+    property bool locating: false
+    property string locateError: ""
 
     SilicaListView {
         id: listView
@@ -24,6 +26,7 @@ Page {
 
         header: Column {
             width: parent.width
+            spacing: Theme.paddingMedium
 
             PageHeader {
                 title: qsTr("Select station")
@@ -39,23 +42,41 @@ Page {
                 EnterKey.iconSource: "image://theme/icon-m-search"
                 EnterKey.onClicked: appController.searchStations(text)
             }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: page.locating ? qsTr("Locating...") : qsTr("Find nearest station")
+                enabled: !page.locating && !appController.stationsLoading
+                onClicked: {
+                    page.locateError = ""
+                    page.locating = true
+                    positionSource.active = true
+                    locationTimeout.restart()
+                }
+            }
+
+            SectionHeader {
+                visible: searchField.text.length < 2 && appController.recentStations.length > 0
+                text: qsTr("Recent")
+            }
         }
 
         ViewPlaceholder {
-            enabled: listView.count === 0 && !appController.stationsLoading
+            enabled: listView.count === 0 && !appController.stationsLoading && !page.locating
             text: searchField.text.length < 2
-                  ? qsTr("Type at least two letters")
+                  ? qsTr("Search by name or river, or use GPS")
                   : qsTr("No matching stations")
         }
 
-        model: appController.searchResults
+        model: searchField.text.length >= 2
+               ? appController.searchResults
+               : appController.recentStations
 
         delegate: ListItem {
             id: delegate
             contentHeight: Theme.itemSizeMedium
 
             Label {
-                id: nameLabel
                 anchors {
                     left: parent.left
                     leftMargin: Theme.horizontalPageMargin
@@ -80,12 +101,13 @@ Page {
 
     BusyIndicator {
         anchors.centerIn: parent
-        running: appController.stationsLoading
+        running: appController.stationsLoading || page.locating
         size: BusyIndicatorSize.Large
     }
 
     Label {
-        visible: appController.error !== "" && !appController.stationsLoading
+        visible: (appController.error !== "" || page.locateError !== "")
+                 && !appController.stationsLoading
         anchors {
             left: parent.left
             right: parent.right
@@ -95,7 +117,38 @@ Page {
         wrapMode: Text.Wrap
         font.pixelSize: Theme.fontSizeExtraSmall
         color: Theme.errorColor
-        text: appController.error
+        text: page.locateError !== "" ? page.locateError : appController.error
+    }
+
+    PositionSource {
+        id: positionSource
+        active: false
+
+        onPositionChanged: {
+            if (position.latitudeValid && position.longitudeValid) {
+                positionSource.active = false
+                locationTimeout.stop()
+                appController.findNearestStation(position.coordinate.latitude,
+                                                 position.coordinate.longitude)
+            }
+        }
+
+        onSourceError: {
+            positionSource.active = false
+            locationTimeout.stop()
+            page.locating = false
+            page.locateError = qsTr("Location error: %1").arg(sourceError)
+        }
+    }
+
+    Timer {
+        id: locationTimeout
+        interval: 15000
+        onTriggered: {
+            positionSource.active = false
+            page.locating = false
+            page.locateError = qsTr("Could not determine location")
+        }
     }
 
     Connections {
@@ -104,6 +157,11 @@ Page {
             if (searchField.text.length >= 2) {
                 appController.searchStations(searchField.text)
             }
+        }
+        onNearestStationFound: {
+            page.locating = false
+            if (pageStack.depth > 1) pageStack.pop()
+            else pageStack.replace(Qt.resolvedUrl("DashboardPage.qml"))
         }
     }
 }

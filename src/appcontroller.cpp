@@ -154,6 +154,7 @@ void AppController::initialize()
     m_stationId = m_settings.value(QStringLiteral("station/id")).toString();
     m_stationName = m_settings.value(QStringLiteral("station/name")).toString();
     m_water = m_settings.value(QStringLiteral("station/water")).toString();
+    m_recentStations = m_settings.value(QStringLiteral("stations/recent")).toList();
 
     createClient();
     setNeedsConfig(!configured());
@@ -256,6 +257,8 @@ void AppController::selectStation(const QString &id, const QString &name, const 
     m_settings.setValue(QStringLiteral("station/id"), id);
     m_settings.setValue(QStringLiteral("station/name"), name);
     m_settings.setValue(QStringLiteral("station/water"), water);
+
+    rememberRecentStation(id, name, water);
 
     emit stationChanged();
     emit graphSeriesChanged();
@@ -387,6 +390,10 @@ void AppController::ensureStationListLoaded()
         try {
             const auto cached = m_client->box->load_cached_stations();
             m_stationList.assign(cached.begin(), cached.end());
+            if (m_pendingNearest) {
+                m_pendingNearest = false;
+                doFindNearest(m_pendingLat, m_pendingLon);
+            }
             emit stationListReady();
             return;
         } catch (const rust::Error &) {
@@ -425,6 +432,10 @@ void AppController::ensureStationListLoaded()
             emit guard->stationsLoadingChanged();
             if (list) {
                 guard->m_stationList = *list;
+                if (guard->m_pendingNearest) {
+                    guard->m_pendingNearest = false;
+                    guard->doFindNearest(guard->m_pendingLat, guard->m_pendingLon);
+                }
                 emit guard->stationListReady();
             } else if (!error.isEmpty()) {
                 guard->setError(error);
@@ -580,4 +591,55 @@ QString AppController::logText() const
 {
     QMutexLocker lock(&g_logMutex);
     return g_logLines.join(QLatin1Char('\n'));
+}
+
+void AppController::rememberRecentStation(const QString &id, const QString &name, const QString &water)
+{
+    QVariantList list;
+    // drop any existing entry with this id, keep it most-recent
+    for (const QVariant &v : m_recentStations) {
+        const QVariantMap m = v.toMap();
+        if (m.value(QStringLiteral("id")).toString() != id)
+            list.append(m);
+    }
+    QVariantMap entry;
+    entry.insert(QStringLiteral("id"), id);
+    entry.insert(QStringLiteral("name"), name);
+    entry.insert(QStringLiteral("water"), water);
+    list.prepend(entry);
+    while (list.size() > 3)
+        list.removeLast();
+
+    m_recentStations = list;
+    m_settings.setValue(QStringLiteral("stations/recent"), list);
+    emit recentStationsChanged();
+}
+
+void AppController::findNearestStation(double lat, double lon)
+{
+    if (!m_clientReady) {
+        setError(tr("API is not configured"));
+        return;
+    }
+    if (m_stationList.empty()) {
+        m_pendingLat = lat;
+        m_pendingLon = lon;
+        m_pendingNearest = true;
+        ensureStationListLoaded();
+        return;
+    }
+    doFindNearest(lat, lon);
+}
+
+void AppController::doFindNearest(double lat, double lon)
+{
+    const auto nearest = wasserspiegel::nearest_station(
+        constSlice<wasserspiegel::FfiStationSummary>(m_stationList), lat, lon);
+    if (nearest.empty()) {
+        setError(tr("No geolocated stations available"));
+        return;
+    }
+    const auto &s = nearest.at(0);
+    selectStation(rustString(s.id), rustString(s.name), rustString(s.water));
+    emit nearestStationFound();
 }

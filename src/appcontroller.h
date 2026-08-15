@@ -51,6 +51,7 @@ class AppController : public QObject
     // station search
     Q_PROPERTY(QVariantList searchResults READ searchResults NOTIFY searchResultsChanged)
     Q_PROPERTY(bool stationsLoading READ stationsLoading NOTIFY stationsLoadingChanged)
+    Q_PROPERTY(QVariantList recentStations READ recentStations NOTIFY recentStationsChanged)
 
     // settings (QSettings-backed, applied to the client immediately)
     Q_PROPERTY(QString apiBase READ apiBase WRITE setApiBase NOTIFY settingsChanged)
@@ -73,6 +74,7 @@ public:
     Q_INVOKABLE void applySettings(const QString &apiBase, const QString &apiToken);
     Q_INVOKABLE void testConnection();
     Q_INVOKABLE QString logText() const;
+    Q_INVOKABLE void findNearestStation(double lat, double lon);
 
     // property getters
     QString stationId() const { return m_stationId; }
@@ -97,6 +99,7 @@ public:
     qint64 seriesEndMs() const { return m_seriesEndMs; }
     QVariantList searchResults() const { return m_searchResults; }
     bool stationsLoading() const { return m_stationsLoading; }
+    QVariantList recentStations() const { return m_recentStations; }
     QString apiBase() const { return m_apiBase; }
     QString apiToken() const { return m_apiToken; }
     bool configured() const { return !m_apiBase.isEmpty() && !m_apiToken.isEmpty(); }
@@ -117,6 +120,8 @@ signals:
     void connectionTested(bool ok, const QString &message);
     void stationListReady();
     void needsConfigChanged();
+    void nearestStationFound();
+    void recentStationsChanged();
 
 private:
     void populateFromMetrics(const wasserspiegel::FfiStationMetrics &metrics, bool persist);
@@ -126,6 +131,8 @@ private:
     void setError(const QString &message);
     void setNeedsConfig(bool value);
     void applyDemoData();
+    void doFindNearest(double lat, double lon);
+    void rememberRecentStation(const QString &id, const QString &name, const QString &water);
     bool createClient();
     QVariantList summariesToVariantList(
         const rust::Vec<wasserspiegel::FfiStationSummary> &list);
@@ -163,6 +170,11 @@ private:
     QVariantList m_searchResults;
     bool m_stationsLoading = false;
     std::vector<wasserspiegel::FfiStationSummary> m_stationList;
+
+    QVariantList m_recentStations;
+    double m_pendingLat = 0.0;
+    double m_pendingLon = 0.0;
+    bool m_pendingNearest = false;
 
     QString m_apiBase;
     QString m_apiToken;

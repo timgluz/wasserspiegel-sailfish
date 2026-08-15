@@ -24,6 +24,13 @@ Item {
         }
         height: parent.height - graph.bottomMargin
 
+        // Canvas may not be laid out yet when data first arrives - repaint
+        // whenever it becomes available or its size changes.
+        onWidthChanged: requestPaint()
+        onHeightChanged: requestPaint()
+        onAvailableChanged: if (available) requestPaint()
+        Component.onCompleted: requestPaint()
+
         onPaint: {
             var ctx = getContext("2d")
             ctx.reset()

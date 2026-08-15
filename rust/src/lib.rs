@@ -103,6 +103,15 @@ mod ffi {
 
         /// Min/max value of a series (guarded against flat lines).
         fn series_range(history: &[FfiMeasurementPoint]) -> FfiSeriesRange;
+
+        /// Nearest station by great-circle (haversine) distance to the
+        /// given coordinates; empty vec if the list is empty or has no
+        /// geolocated entries.
+        fn nearest_station(
+            list: &[FfiStationSummary],
+            lat: f64,
+            lon: f64,
+        ) -> Vec<FfiStationSummary>;
     }
 }
 
@@ -267,6 +276,45 @@ fn series_range(history: &[ffi::FfiMeasurementPoint]) -> ffi::FfiSeriesRange {
         .collect();
     let (min, max) = graph::value_range(&owned);
     ffi::FfiSeriesRange { min, max }
+}
+
+fn haversine_km(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
+    const R: f64 = 6371.0;
+    let dlat = (lat2 - lat1).to_radians();
+    let dlon = (lon2 - lon1).to_radians();
+    let a = (dlat / 2.0).sin().powi(2)
+        + lat1.to_radians().cos() * lat2.to_radians().cos() * (dlon / 2.0).sin().powi(2);
+    2.0 * R * a.sqrt().atan2((1.0 - a).sqrt())
+}
+
+fn nearest_station(
+    list: &[ffi::FfiStationSummary],
+    lat: f64,
+    lon: f64,
+) -> Vec<ffi::FfiStationSummary> {
+    let mut best: Option<&ffi::FfiStationSummary> = None;
+    let mut best_d = f64::MAX;
+    for s in list {
+        if s.latitude == 0.0 && s.longitude == 0.0 {
+            continue;
+        }
+        let d = haversine_km(lat, lon, s.latitude, s.longitude);
+        if d < best_d {
+            best_d = d;
+            best = Some(s);
+        }
+    }
+    match best {
+        Some(s) => vec![ffi::FfiStationSummary {
+            id: s.id.clone(),
+            name: s.name.clone(),
+            water: s.water.clone(),
+            km: s.km,
+            latitude: s.latitude,
+            longitude: s.longitude,
+        }],
+        None => Vec::new(),
+    }
 }
 
 fn log_cache_failure(what: &str, e: &CoreError) {
