@@ -263,19 +263,15 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Location access denied</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Location service closed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Location timeout</source>
+        <source>Location error (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Location error (%1)</source>
+        <source>Location service unavailable</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
