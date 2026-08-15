@@ -51,6 +51,7 @@ gpg --gen-key
 task sign:setup SIGNING_USER="Timo Sulg"          # + optional PASSPHRASE_FILE
 task sign                                         # sfdk build --prepare --sign
 task verify                                       # rpm -K
+task release                                      # sign + verify + sha256 (one-shot)
 ```
 
 First-time verification may report `digests SIGNATURES NOT OK`; import the

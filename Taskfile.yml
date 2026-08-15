@@ -75,6 +75,21 @@ tasks:
     cmds:
       - rpm -K {{.ROOT_DIR}}/RPMS/harbour-wasserspiegel-*.rpm
 
+  release:
+    desc: "Build a signed + signature-verified release RPM (commit first; run sign:setup once)"
+    silent: true
+    preconditions:
+      - sh: command -v sfdk
+        msg: "sfdk not found - install the Sailfish SDK and add it to PATH."
+      - sh: command -v rpm
+        msg: "rpm not found - install the rpm tools."
+    cmds:
+      - task: sign
+      - task: verify
+      - echo "Release RPM:"
+      - ls -la {{.ROOT_DIR}}/RPMS/harbour-wasserspiegel-*.rpm
+      - sha256sum {{.ROOT_DIR}}/RPMS/harbour-wasserspiegel-*.rpm
+
   check:
     desc: "Run Harbour + rpmlint quality checks on the RPM (sfdk check)"
     silent: true

@@ -218,6 +218,7 @@ may restrict writes). The in-app Logs page is the most reliable source.
 | `task sign:setup` | configure sfdk for RPM signing (once) |
 | `task sign` | build + sign the RPM (`sfdk build --prepare --sign`) |
 | `task verify` | verify the RPM signature (`rpm -K`) |
+| `task release` | `sign` + `verify` + checksum (one-shot release build) |
 | `task test` / `task test:live` / `task smoke` | Rust tests / live API / host bridge smoke |
 | `task test:all` | all of the above |
 | `task lint` / `task fmt` | clippy + rustfmt on the Rust core |
@@ -236,6 +237,7 @@ task sign:setup SIGNING_USER="Timo Sulg" PASSPHRASE_FILE="$HOME/.config/passphra
 
 task sign                                       # build + sign
 task verify                                     # rpm -K on the built package
+task release                                    # sign + verify + sha256 (one-shot)
 ```
 
 The first `task verify` may report `digests SIGNATURES NOT OK` until the
