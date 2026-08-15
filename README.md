@@ -116,19 +116,23 @@ at runtime in Settings):
 
 ```sh
 direnv allow .        # or: source .envrc
-task build            # = task engine:rust + sfdk build
+task build            # = task engine:rust + sfdk build --prepare
 ```
 
 Output lands in `RPMS/wasserspiegel-*.rpm`.
 
 Notes:
 
+- **`--prepare` is required.** `sfdk build` without `--prepare` reuses a
+  stale source snapshot from the shadow build, so your QML/C++ changes are
+  silently ignored - the classic "it still shows the old UI" gotcha.
+  `--prepare` needs a clean git tree, so **commit your changes first**.
 - The token baked at build time is a convenience default for personal
   builds. Do **not** ship packages built with it - build without the env
   vars and let users configure Settings instead.
 - `task build` re-runs the Rust cross-build every time; to iterate only on
-  the C++/QML side use `sfdk build` directly (the prebuilt `.a` is already
-  there).
+  the C++/QML side use `sfdk build --prepare` directly (the prebuilt `.a`
+  is already there).
 
 ### 6. Prepare the phone
 
@@ -179,8 +183,29 @@ new build). Then launch **Wasserspiegel** from the app grid.
 
 ```sh
 task build && task deploy
-ssh defaultuser@192.168.2.15   # then: journalctl --user -f | grep -i wasserspiegel
 ```
+
+The app ships its own log viewer: pull down on the dashboard and tap
+**Logs** (shows the in-memory ring buffer: QML errors, network activity,
+etc., with refresh + copy buttons).
+
+To see logs from the host after SSH-ing into the phone:
+
+```sh
+ssh defaultuser@192.168.2.15
+
+# system journal (needs the developer password):
+devel-su journalctl -b --no-pager | grep -i wasserspiegel
+devel-su journalctl -b -f | grep -i wasserspiegel     # live tail
+
+# user journal (no password, but apps sandboxed by sailjail often log
+# to the system journal instead):
+journalctl --user -b --no-pager | grep -i wasserspiegel
+```
+
+A QML/console log file is also written to
+`/home/defaultuser/.cache/wasserspiegel/debug.log` (best-effort - sailjail
+may restrict writes). The in-app Logs page is the most reliable source.
 
 ## Taskfile quick reference
 
@@ -188,7 +213,7 @@ ssh defaultuser@192.168.2.15   # then: journalctl --user -f | grep -i wasserspie
 | --- | --- |
 | `task engine:setup` | one-time build-engine setup (Rust toolchain + credential forwarding) |
 | `task engine:rust` | cross-compile the Rust core for aarch64 in the engine |
-| `task build` | `engine:rust` + `sfdk build` |
+| `task build` | `engine:rust` + `sfdk build --prepare` |
 | `task deploy` | scp + `pkcon install-local` (default `defaultuser@192.168.2.15`) |
 | `task test` / `task test:live` / `task smoke` | Rust tests / live API / host bridge smoke |
 | `task test:all` | all of the above |
