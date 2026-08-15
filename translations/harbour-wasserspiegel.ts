@@ -239,15 +239,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Locating...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Recent</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Location service closed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -255,23 +247,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Find nearest station (GPS)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Search by city name or river, or use the GPS button above</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Location is disabled — enable it in Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Could not determine location — check Location is enabled</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Location timed out — check Location is enabled</source>
+        <source>Search by city name or river</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
