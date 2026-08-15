@@ -16,6 +16,10 @@
 #include <cstdio>
 #include <stdexcept>
 
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #ifndef WASSERSPIEGEL_DEFAULT_API_BASE
 #define WASSERSPIEGEL_DEFAULT_API_BASE ""
 #endif
@@ -63,34 +67,49 @@ QString logLevelName(QtMsgType type)
     return QStringLiteral("?");
 }
 
+// Raw POSIX log file (immune to QFile/sandbox interactions). Resolved once,
+// lazily, with mkdir fallbacks across the candidate cache locations.
+int logFd()
+{
+    static int fd = -1;
+    if (fd >= 0)
+        return fd;
+    const char *paths[] = {
+        "/home/defaultuser/.cache/wasserspiegel/debug.log",
+        "/home/defaultuser/wasserspiegel-debug.log",
+        "/tmp/wasserspiegel-debug.log",
+    };
+    for (const char *p : paths) {
+        // ensure the parent directory exists
+        QByteArray dir(p);
+        const int slash = dir.lastIndexOf('/');
+        if (slash > 0)
+            ::mkdir(dir.left(slash).constData(), 0755);
+        fd = ::open(p, O_WRONLY | O_CREAT | O_APPEND, 0644);
+        if (fd >= 0)
+            return fd;
+    }
+    return -1;
+}
+
 void wsMessageHandler(QtMsgType type, const QMessageLogContext &ctx, const QString &msg)
 {
     Q_UNUSED(ctx);
-    const QString line = QStringLiteral("%1 %2 %3")
-        .arg(QDateTime::currentDateTime().toString(QStringLiteral("HH:mm:ss.zzz")),
-             logLevelName(type), msg);
+    const QByteArray line = QDateTime::currentDateTime().toString(QStringLiteral("HH:mm:ss.zzz")).toUtf8()
+        + ' ' + logLevelName(type).toUtf8()
+        + ' ' + msg.toUtf8() + '\n';
+
+    ::write(2, line.constData(), static_cast<size_t>(line.size()));
+
+    const int fd = logFd();
+    if (fd >= 0)
+        ::write(fd, line.constData(), static_cast<size_t>(line.size()));
+
     {
         QMutexLocker lock(&g_logMutex);
-        g_logLines.append(line);
+        g_logLines.append(QString::fromUtf8(line));
         while (g_logLines.size() > g_maxLogLines)
             g_logLines.removeFirst();
-    }
-    std::fprintf(stderr, "%s\n", line.toUtf8().constData());
-    std::fflush(stderr);
-
-    // also append to a file for on-device debugging (the Logs page shows
-    // the in-memory buffer; the file survives crashes)
-    static QFile f;
-    if (!f.isOpen()) {
-        const QString path = QStringLiteral("/home/defaultuser/.cache/wasserspiegel/debug.log");
-        QDir().mkpath(QFileInfo(path).absolutePath());
-        f.setFileName(path);
-        f.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
-    }
-    if (f.isOpen()) {
-        QTextStream ts(&f);
-        ts << line << QLatin1Char('\n');
-        ts.flush();
     }
 }
 
