@@ -231,10 +231,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>e.g. Mannheim or Rhein</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>No matching stations</source>
         <translation type="unfinished"></translation>
     </message>
@@ -247,15 +243,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Find nearest station</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Recent</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Search by name or river, or use GPS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -272,6 +260,18 @@
     </message>
     <message>
         <source>Location service unavailable</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>City name or river, e.g. Mannheim</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Find nearest station (GPS)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search by city name or river, or use the GPS button above</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
