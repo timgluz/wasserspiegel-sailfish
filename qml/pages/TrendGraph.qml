@@ -109,7 +109,26 @@ Item {
               : ""
     }
 
-    onPointsChanged: canvas.requestPaint()
+    onPointsChanged: {
+        canvas.requestPaint()
+        repaintTimer.restart()
+    }
     onMinValueChanged: canvas.requestPaint()
     onMaxValueChanged: canvas.requestPaint()
+
+    // Repaint when the underlying data changes (arrives asynchronously
+    // after a station change). The property handlers above can miss it
+    // when the graph is mid-transition; the signal is more reliable.
+    Connections {
+        target: appController
+        onGraphSeriesChanged: canvas.requestPaint()
+    }
+
+    // Belt-and-suspenders: force a repaint shortly after the points
+    // change, in case the Canvas was not yet laid out / visible.
+    Timer {
+        id: repaintTimer
+        interval: 50
+        onTriggered: canvas.requestPaint()
+    }
 }

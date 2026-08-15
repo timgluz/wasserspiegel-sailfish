@@ -137,7 +137,7 @@ Page {
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeExtraSmall
                 color: Theme.secondaryColor
-                text: qsTr("Demo data - pick a station for live readings")
+                text: qsTr("Sample data - pick a station for live readings")
             }
 
             // ---- offline / error notices ----

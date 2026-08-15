@@ -560,7 +560,7 @@ void AppController::setNeedsConfig(bool value)
 void AppController::applyDemoData()
 {
     m_stationId.clear();
-    m_stationName = QStringLiteral("Demo station");
+    m_stationName = QStringLiteral("Mannheim");
     m_water = QStringLiteral("Rhein");
     m_km = 424.7;
     m_currentLevel = 88.0;
