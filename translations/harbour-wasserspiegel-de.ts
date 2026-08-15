@@ -247,19 +247,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Could not determine location</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Location service closed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Location error (%1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Location service unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -272,6 +260,18 @@
     </message>
     <message>
         <source>Search by city name or river, or use the GPS button above</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Location is disabled — enable it in Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not determine location — check Location is enabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Location timed out — check Location is enabled</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
