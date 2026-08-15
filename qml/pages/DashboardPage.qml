@@ -232,7 +232,7 @@ Page {
                 value: appController.stationName
             }
             DetailItem {
-                label: qsTr("River km")
+                label: qsTr("from source")
                 value: appController.km > 0 ? appController.km.toFixed(1) : "-"
             }
             DetailItem {
