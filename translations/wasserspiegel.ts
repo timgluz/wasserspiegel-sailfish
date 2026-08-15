@@ -42,6 +42,14 @@
         <source>OK - %1 stations loaded</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>API is not configured</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No geolocated stations available</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>CoverPage</name>
@@ -101,10 +109,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>River km</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Last measurement</source>
         <translation type="unfinished"></translation>
     </message>
@@ -117,11 +121,15 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Demo data - pick a station for live readings</source>
+        <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>About</source>
+        <source>Sample data - pick a station for live readings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>from source</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -193,15 +201,35 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Type at least two letters</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>No matching stations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Locating...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Find nearest station</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search by name or river, or use GPS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Location error: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not determine location</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
